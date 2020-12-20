@@ -1,5 +1,7 @@
 package com.laioffer.job.external;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.laioffer.job.entity.Item;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -14,11 +16,14 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 public class GitHubClient {
     private static final String URL_TEMPLATE = "https://jobs.github.com/positions.json?description=%s&lat=%s&long=%s";
     private static final String DEFAULT_KEYWORD = "developer";
-    public String search(double lat, double lon, String keyword) {
+    public List<Item> search(double lat, double lon, String keyword) {
         if(keyword == null) {
             keyword = DEFAULT_KEYWORD;
         }
@@ -30,17 +35,19 @@ public class GitHubClient {
         String url = String.format(URL_TEMPLATE, keyword, lat, lon);
         CloseableHttpClient httpclient = HttpClients.createDefault();
 
-        ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
+        ResponseHandler<List<Item>> responseHandler = new ResponseHandler<List<Item>>() {
             @Override
-            public String handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
+            public List<Item> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    return "";
+                    return Collections.emptyList();
                 }
                 HttpEntity entity = response.getEntity();
                 if (entity == null) {
-                    return "";
+                    return Collections.emptyList();
                 }
-                return EntityUtils.toString(entity);
+                ObjectMapper mapper = new ObjectMapper();
+                          return Arrays.asList(mapper.readValue(entity.getContent(), Item[].class));
+
             }
         };
 
@@ -49,6 +56,7 @@ public class GitHubClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return "";
+        return Collections.emptyList();
+
     }
 }
