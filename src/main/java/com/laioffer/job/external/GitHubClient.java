@@ -46,7 +46,8 @@ public class GitHubClient {
                     return Collections.emptyList();
                 }
                 ObjectMapper mapper = new ObjectMapper();
-                          return Arrays.asList(mapper.readValue(entity.getContent(), Item[].class));
+               Item[] itemArray = mapper.readValue(entity.getContent(), Item[].class);
+               return Arrays.asList(itemArray);
 
             }
         };
