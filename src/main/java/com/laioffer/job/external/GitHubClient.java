@@ -21,35 +21,31 @@ import java.util.Collections;
 import java.util.List;
 
 public class GitHubClient {
-    private static final String URL_TEMPLATE = "https://jobs.github.com/positions.json?description=%s&lat=%s&long=%s";
+    private static final String URL_TEMPLATE = "https://jobs.github.com/positions.json?lat=%s&long=%s";
+//    "https://jobs.github.com/positions.json?lat=%s&long=%s"
     private static final String DEFAULT_KEYWORD = "developer";
-    public List<Item> search(double lat, double lon, String keyword) {
-        if(keyword == null) {
-            keyword = DEFAULT_KEYWORD;
-        }
-        try {
-            keyword = URLEncoder.encode(keyword, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
-        }
-        String url = String.format(URL_TEMPLATE, keyword, lat, lon);
+    public List<Item> search(double lat, double lon) {
+
+
+        // “hello world” => “hello%20world”
+
+        String url = String.format(URL_TEMPLATE, lat, lon);
+
         CloseableHttpClient httpclient = HttpClients.createDefault();
 
-        ResponseHandler<List<Item>> responseHandler = new ResponseHandler<List<Item>>() {
-            @Override
-            public List<Item> handleResponse(HttpResponse response) throws ClientProtocolException, IOException {
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    return Collections.emptyList();
-                }
-                HttpEntity entity = response.getEntity();
-                if (entity == null) {
-                    return Collections.emptyList();
-                }
-                ObjectMapper mapper = new ObjectMapper();
-               Item[] itemArray = mapper.readValue(entity.getContent(), Item[].class);
-               return Arrays.asList(itemArray);
-
+        // Create a custom response handler
+        ResponseHandler<List<Item>> responseHandler = response -> {
+            if (response.getStatusLine().getStatusCode() != 200) {
+                return Collections.emptyList();
             }
+            HttpEntity entity = response.getEntity();
+            System.out.println(entity.toString());
+            if (entity == null) {
+                return Collections.emptyList();
+            }
+            ObjectMapper mapper = new ObjectMapper();
+            return Arrays.asList(mapper.readValue(entity.getContent(), Item[].class));
+
         };
 
         try {
@@ -57,7 +53,6 @@ public class GitHubClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return Collections.emptyList();
-
+       return Collections.emptyList();
     }
 }

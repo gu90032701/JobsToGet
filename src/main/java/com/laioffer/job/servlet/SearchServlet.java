@@ -21,11 +21,15 @@ public class SearchServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         double lat = Double.parseDouble(request.getParameter("lat"));
         double lon = Double.parseDouble(request.getParameter("lon"));
+
         GitHubClient client = new GitHubClient();
         response.setContentType("application/json");
-        List<Item> items = client.search(lat, lon, null);
+        List<Item> items = client.search(lat, lon);
         ObjectMapper mapper = new ObjectMapper();
         mapper.writeValue(response.getWriter(), items);
 
+
+
     }
+
 }
