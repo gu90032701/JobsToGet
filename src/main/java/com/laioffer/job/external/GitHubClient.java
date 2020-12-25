@@ -16,14 +16,13 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class GitHubClient {
     private static final String URL_TEMPLATE = "https://jobs.github.com/positions.json?lat=%s&long=%s";
-//    "https://jobs.github.com/positions.json?lat=%s&long=%s"
+    //    "https://jobs.github.com/positions.json?lat=%s&long=%s"
     private static final String DEFAULT_KEYWORD = "developer";
+
     public List<Item> search(double lat, double lon) {
 
 
@@ -44,7 +43,9 @@ public class GitHubClient {
                 return Collections.emptyList();
             }
             ObjectMapper mapper = new ObjectMapper();
-            return Arrays.asList(mapper.readValue(entity.getContent(), Item[].class));
+            List<Item> items = Arrays.asList(mapper.readValue(entity.getContent(), Item[].class));
+                        extractKeywords(items);
+                        return items;
 
         };
 
@@ -53,6 +54,21 @@ public class GitHubClient {
         } catch (IOException e) {
             e.printStackTrace();
         }
-       return Collections.emptyList();
+        return Collections.emptyList();
+    }
+
+    private void extractKeywords(List<Item> items) {
+        MonkeyLearnClient monkeyLearnClient = new MonkeyLearnClient();
+
+
+        List<String> descriptions = new ArrayList<>();
+        for (Item item : items) {
+            descriptions.add(item.getDescription());
+        }
+        List<Set<String>> keywordList = monkeyLearnClient.extract(descriptions);
+        for (int i = 0; i < items.size(); i++) {
+            items.get(i).setKeywords(keywordList.get(i));
+        }
+
     }
 }
