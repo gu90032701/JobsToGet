@@ -60,6 +60,7 @@ public class MySQLConnection {
             e.printStackTrace();
         }
     }
+
     public void setFavoriteItems(String userId, Item item) {
         if (conn == null) {
             System.err.println("DB connection failed");
@@ -92,6 +93,7 @@ public class MySQLConnection {
             e.printStackTrace();
         }
     }
+
     public Set<String> getFavoriteItemIds(String userId) {
         if (conn == null) {
             System.err.println("DB connection failed");
@@ -115,6 +117,7 @@ public class MySQLConnection {
 
         return favoriteItems;
     }
+
     public Set<Item> getFavoriteItems(String userId) {
         if (conn == null) {
             System.err.println("DB connection failed");
@@ -131,13 +134,13 @@ public class MySQLConnection {
                 ResultSet rs = statement.executeQuery();
                 if (rs.next()) {
                     favoriteItems.add(new Item(rs.getString("item_id")
-                            ,rs.getString("name")
-                            ,rs.getString("address")
-                            ,rs.getString("image_url")
-                            ,rs.getString("url")
-                            ,null
+                            , rs.getString("name")
+                            , rs.getString("address")
+                            , rs.getString("image_url")
+                            , rs.getString("url")
+                            , null
                             , getKeywords(itemId)
-                            ,true));
+                            , true));
 
                 }
             }
@@ -168,6 +171,68 @@ public class MySQLConnection {
         }
         return keywords;
     }
+
+    public String getFullname(String userId) {
+        if (conn == null) {
+            System.err.println("DB connection failed");
+            return "";
+        }
+        String name = " ";
+        String sql = "Select first_name, last_name from users where user_id = ?";
+
+
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                name = rs.getString("first_name") + " " + rs.getString("last_name");
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return name;
+    }
+    public boolean verifyLogin(String userId, String password) {
+        if (conn == null) {
+            System.err.println("DB connection failed");
+            return false;
+        }
+        String sql = "SELECT user_id FROM users WHERE user_id = ? AND password = ?";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
+            statement.setString(2, password);
+            ResultSet rs = statement.executeQuery();
+            if (rs.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+        return false;
+    }
+    public boolean addUser(String userId, String password, String firstname, String lastname) {
+        if (conn == null) {
+            System.err.println("DB connection failed");
+            return false;
+        }
+
+        String sql = "INSERT IGNORE INTO users VALUES (?, ?, ?, ?)";
+        try {
+            PreparedStatement statement = conn.prepareStatement(sql);
+            statement.setString(1, userId);
+            statement.setString(2, password);
+            statement.setString(3, firstname);
+            statement.setString(4, lastname);
+
+            return statement.executeUpdate() == 1;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
 
 

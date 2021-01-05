@@ -33,7 +33,6 @@ public class ExampleBookServlet extends HttpServlet {
         System.out.println("Series is: " + series);
         System.out.println("Language is: " + language);
         System.out.println("ISBN is: " + isbn);
-
         response.setContentType("application/json");
         JSONObject jsonResponse = new JSONObject();
         jsonResponse.put("status", "ok");
